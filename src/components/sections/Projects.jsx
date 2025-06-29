@@ -52,7 +52,7 @@ const allProjects = [
     desc: "Modern animated personal portfolio built using React and Framer Motion.",
     tech: ["React", "TailwindCSS"],
     category: ["Frontend"],
-    demoLink: "https://your-portfolio.com",
+    demoLink: "https://my-portfolio-orcin-five-96.vercel.app/",
     codeLink: "https://github.com/DiyaDitto/my_portfolio",
     image: "/portfolio.jpg",
   },
