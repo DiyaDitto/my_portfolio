@@ -1,3 +1,4 @@
+// 📁 src/components/sections/Projects.jsx
 import React, { useState } from "react";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import {
@@ -5,11 +6,10 @@ import {
   SiCss3, SiJavascript, SiNextdotjs, SiRedux, SiMongodb,
   SiFirebase, SiNodedotjs, SiExpress, SiVuedotjs, SiAngular,
 } from "react-icons/si";
-import { motion } from "framer-motion";
-import RevealOnScroll from "../RevealOnScroll";
+import { motion, AnimatePresence } from "framer-motion";
 import { Dialog } from "@headlessui/react";
+import RevealOnScroll from "../RevealOnScroll";
 
-// Tech Icon Colors
 const techIconMap = {
   React: <SiReact className="text-cyan-400 text-lg" />,
   TailwindCSS: <SiTailwindcss className="text-sky-400 text-lg" />,
@@ -27,8 +27,6 @@ const techIconMap = {
   Vue: <SiVuedotjs className="text-green-400 text-lg" />,
   Angular: <SiAngular className="text-red-500 text-lg" />,
 };
-
-const categories = ["All", "Frontend", "Backend", "Fullstack", "Others"];
 
 const allProjects = [
   {
@@ -73,12 +71,10 @@ const Projects = () => {
   const [filter, setFilter] = useState("All");
   const [selectedImage, setSelectedImage] = useState(null);
   const [visibleCount, setVisibleCount] = useState(4);
+  const [hoveredIndex, setHoveredIndex] = useState({ projectIdx: -1, techIdx: -1 });
 
-  const filtered =
-    filter === "All"
-      ? allProjects
-      : allProjects.filter((proj) => proj.category.includes(filter));
-
+  const categories = ["All", ...Array.from(new Set(allProjects.flatMap((p) => p.category)))];
+  const filtered = filter === "All" ? allProjects : allProjects.filter((proj) => proj.category.includes(filter));
   const visibleProjects = filtered.slice(0, visibleCount);
 
   return (
@@ -102,11 +98,12 @@ const Projects = () => {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setFilter(cat)}
+                onClick={() => {
+                  setFilter(cat);
+                  setVisibleCount(4);
+                }}
                 className={`px-5 py-2 rounded-full border text-sm font-medium transition ${
-                  filter === cat
-                    ? "bg-cyan-600 text-white"
-                    : "bg-white/10 text-cyan-300 hover:bg-cyan-600/10"
+                  filter === cat ? "bg-cyan-600 text-white" : "bg-white/10 text-cyan-300 hover:bg-cyan-600/10"
                 }`}
               >
                 {cat}
@@ -116,47 +113,56 @@ const Projects = () => {
 
           {/* Project Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-            {visibleProjects.map((project, index) => (
+            {visibleProjects.map((project, projectIdx) => (
               <motion.div
-                key={index}
+                key={projectIdx}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.15 }}
-                className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden shadow-lg group transition"
+                transition={{ duration: 0.4, delay: projectIdx * 0.15 }}
+                className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden shadow-lg transition"
               >
                 <div className="relative">
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-56 object-cover cursor-pointer group-hover:scale-105 transition duration-500"
+                    className="w-full h-56 object-cover cursor-pointer hover:scale-105 transition duration-500"
                     onClick={() => setSelectedImage(project.image)}
                   />
                 </div>
                 <div className="p-6 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-2xl font-semibold text-cyan-300 mb-2">
-                      {project.title}
-                    </h3>
+                    <h3 className="text-2xl font-semibold text-cyan-300 mb-2">{project.title}</h3>
                     <p className="text-sm text-gray-300 mb-4">{project.desc}</p>
 
-                    {/* Tech Icons - Hover Tooltip */}
+                    {/* Tech Icons - One-by-one tooltip */}
                     <div className="flex flex-wrap gap-3 mb-4">
-                      {project.tech.map((tech, i) => (
+                      {project.tech.map((tech, techIdx) => (
                         <div
-                          key={i}
-                          className="relative group inline-flex items-center justify-center w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20 transition cursor-pointer"
+                          key={techIdx}
+                          onMouseEnter={() => setHoveredIndex({ projectIdx, techIdx })}
+                          onMouseLeave={() => setHoveredIndex({ projectIdx: -1, techIdx: -1 })}
+                          className="relative inline-flex items-center justify-center w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 transition cursor-pointer"
                         >
                           {techIconMap[tech]}
-                          <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-10">
-                            {tech}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
-                          </div>
+                          <AnimatePresence>
+                            {hoveredIndex.projectIdx === projectIdx && hoveredIndex.techIdx === techIdx && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 5 }}
+                                exit={{ opacity: 0, y: -5 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-full mt-2 px-2 py-1 bg-black text-white text-xs rounded z-50 whitespace-nowrap"
+                              >
+                                {tech}
+                                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45 z-[-1]" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex gap-4 mt-2">
                     <a
                       href={project.demoLink}
@@ -194,11 +200,7 @@ const Projects = () => {
         </RevealOnScroll>
 
         {/* Image Modal */}
-        <Dialog
-          open={!!selectedImage}
-          onClose={() => setSelectedImage(null)}
-          className="fixed inset-0 z-50"
-        >
+        <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} className="fixed inset-0 z-50">
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <Dialog.Panel className="relative max-w-3xl mx-auto">
               <img

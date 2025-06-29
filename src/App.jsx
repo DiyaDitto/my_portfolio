@@ -7,7 +7,6 @@ import { About } from "./components/sections/About";
 import Projects from "./components/sections/Projects";
 import RevealOnScroll from "./components/RevealOnScroll";
 import Contact from "./components/sections/Contact";
-//import Footer from "./components/sections/Footer";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +31,7 @@ function App() {
         <Projects />
         <RevealOnScroll />
         <Contact />
+        
        
       </div>
     </>
